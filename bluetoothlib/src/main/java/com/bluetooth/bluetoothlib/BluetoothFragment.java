@@ -27,6 +27,7 @@ public class BluetoothFragment extends Fragment {
     private BluetoothListener bluetoothListener;
     private BluetoothDiscoverier bluetoothDiscoverier;
     private AlertDialog alertDialog;
+    private BluetoothConnection connection;
 
     public void setBluetoothListener(BluetoothListener bluetoothListener) {
         this.bluetoothListener = bluetoothListener;
@@ -51,10 +52,9 @@ public class BluetoothFragment extends Fragment {
             String notGranted = "";
             for (int i = 0; i < grantResults.length; i++) {
                 if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
-                    granted += grantResults[i] + "\n";
-
+                    granted += permissions[i] + "\n";
                 } else {
-                    notGranted += grantResults[i] + "\n";
+                    notGranted += permissions[i] + "\n";
                 }
             }
             if (TextUtils.isEmpty(notGranted)) {
@@ -113,7 +113,7 @@ public class BluetoothFragment extends Fragment {
         }).setPositiveButton("确认", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if (BondUtils.pairDevice(device, ((EditText)alertDialog.findViewById(R.id.et_pasword)).getText().toString())) {
+                if (BondUtils.pairDevice(device, ((EditText) alertDialog.findViewById(R.id.et_pasword)).getText().toString())) {
                     startConnect(device);
                 }
             }
@@ -134,7 +134,7 @@ public class BluetoothFragment extends Fragment {
             bluetoothFragment = new BluetoothFragment();
         }
         bluetoothFragment.setBluetoothListener(listener);
-        manager.beginTransaction().add(bluetoothFragment, "xx").commit();
+        manager.beginTransaction().add(bluetoothFragment, tag).commit();
         return bluetoothFragment;
     }
 
@@ -143,8 +143,9 @@ public class BluetoothFragment extends Fragment {
     }
 
     public BluetoothConnection startConnect(BluetoothDevice device) {
-        BluetoothConnection connection = new BluetoothConnection(device);
-        return  connection;
+        if (connection == null || !connection.isConnected())
+            connection = new BluetoothConnection(device);
+        return connection;
     }
 
     public void stopDiscovery() {
