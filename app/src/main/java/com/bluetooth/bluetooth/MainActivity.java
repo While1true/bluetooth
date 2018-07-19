@@ -46,6 +46,8 @@ public class MainActivity extends AppCompatActivity implements BluetoothListener
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
+                        }else {
+                            //wait
                         }
                     }
                 });

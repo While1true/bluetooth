@@ -71,8 +71,11 @@ public class BluetoothFragment extends Fragment {
                 String action = intent.getAction();
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 Toast.makeText(getActivity(), action, Toast.LENGTH_SHORT).show();
-                if (action.equals(BluetoothAdapter.STATE_TURNING_ON)) {
-                    bluetoothDiscoverier.startDiscovery();
+                if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                    int state =intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,BluetoothAdapter.STATE_OFF);
+                   if(state==BluetoothAdapter.STATE_ON){
+                        bluetoothDiscoverier.startDiscovery();
+                   }
                 }
                 // 获得已经搜索到的蓝牙设备
                 else if (action.equals(BluetoothDevice.ACTION_FOUND)) {
