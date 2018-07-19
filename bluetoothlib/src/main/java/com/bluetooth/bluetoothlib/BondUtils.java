@@ -19,14 +19,17 @@ public class BondUtils {
     }
 
     public static boolean pairDevice(BluetoothDevice device, String pasword) {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                if (device.setPairingConfirmation(true) && device.setPin(pasword.getBytes()))
-                    return true;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            try {
+                device.setPairingConfirmation(true);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            if (device.setPin(pasword.getBytes()))
+                return true;
         }
+
         return false;
     }
 }

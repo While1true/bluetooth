@@ -26,7 +26,6 @@ public class BluetoothFragment extends Fragment {
     private BroadcastReceiver broadcastReceiver;
     private BluetoothListener bluetoothListener;
     private BluetoothDiscoverier bluetoothDiscoverier;
-    private AlertDialog alertDialog;
     private BluetoothConnection connection;
 
     public void setBluetoothListener(BluetoothListener bluetoothListener) {
@@ -70,27 +69,27 @@ public class BluetoothFragment extends Fragment {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction();
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 Toast.makeText(getActivity(), action, Toast.LENGTH_SHORT).show();
                 if (action.equals(BluetoothAdapter.STATE_TURNING_ON)) {
                     bluetoothDiscoverier.startDiscovery();
                 }
                 // 获得已经搜索到的蓝牙设备
                 else if (action.equals(BluetoothDevice.ACTION_FOUND)) {
-                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     if (bluetoothListener != null)
                         bluetoothListener.onDeviceFound(device);
                 } else if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)) {
                 } else if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
-                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     if (device.getBondState() == BluetoothDevice.BOND_BONDING) {
                     } else if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
                         startConnect(device);
                     } else if (device.getBondState() == BluetoothDevice.BOND_NONE) {
                         if (bluetoothListener != null)
                             bluetoothListener.onError("pair cancel");
-                    } else if (action.equals(BluetoothDevice.ACTION_PAIRING_REQUEST)) {
-                        pairDevice(device);
                     }
+                } else if (action.equals(BluetoothDevice.ACTION_PAIRING_REQUEST)) {
+                    abortBroadcast();
+                    pairDevice(device);
                 }
             }
         };
@@ -105,21 +104,9 @@ public class BluetoothFragment extends Fragment {
     }
 
     private void pairDevice(final BluetoothDevice device) {
-        alertDialog = new AlertDialog.Builder(getContext()).setView(R.layout.input).setTitle("取消").setNegativeButton("确认", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-
-            }
-        }).setPositiveButton("确认", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (BondUtils.pairDevice(device, ((EditText) alertDialog.findViewById(R.id.et_pasword)).getText().toString())) {
-                    startConnect(device);
-                }
-            }
-        }).create();
-        alertDialog.show();
-
+        if (BondUtils.pairDevice(device, "123456")) {
+            startConnect(device);
+        }
     }
 
     public boolean startBond(BluetoothDevice device) {
