@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -15,7 +16,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.widget.EditText;
 import android.widget.Toast;
 
 public class BluetoothFragment extends Fragment {
@@ -23,6 +26,7 @@ public class BluetoothFragment extends Fragment {
     private BroadcastReceiver broadcastReceiver;
     private BluetoothListener bluetoothListener;
     private BluetoothDiscoverier bluetoothDiscoverier;
+    private AlertDialog alertDialog;
 
     public void setBluetoothListener(BluetoothListener bluetoothListener) {
         this.bluetoothListener = bluetoothListener;
@@ -82,10 +86,10 @@ public class BluetoothFragment extends Fragment {
                     } else if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
                         startConnect(device);
                     } else if (device.getBondState() == BluetoothDevice.BOND_NONE) {
-                    }else if(action.equals(BluetoothDevice.ACTION_PAIRING_REQUEST)){
-                          if(BondUtils.pairDevice(device)){
-                              startConnect(device);
-                          }
+                        if (bluetoothListener != null)
+                            bluetoothListener.onError("pair cancel");
+                    } else if (action.equals(BluetoothDevice.ACTION_PAIRING_REQUEST)) {
+                        pairDevice(device);
                     }
                 }
             }
@@ -96,12 +100,26 @@ public class BluetoothFragment extends Fragment {
         foundFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
         foundFilter.addAction(BluetoothDevice.ACTION_PAIRING_REQUEST);
         getActivity().registerReceiver(broadcastReceiver, foundFilter);
-        Intent discoverableIntent = new Intent(
-                BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
-        startActivity(discoverableIntent);
         bluetoothDiscoverier = new BluetoothDiscoverier(bluetoothListener);
         bluetoothDiscoverier.startDiscovery();
+    }
+
+    private void pairDevice(final BluetoothDevice device) {
+        alertDialog = new AlertDialog.Builder(getContext()).setView(R.layout.input).setTitle("取消").setNegativeButton("确认", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        }).setPositiveButton("确认", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (BondUtils.pairDevice(device, ((EditText)alertDialog.findViewById(R.id.et_pasword)).getText().toString())) {
+                    startConnect(device);
+                }
+            }
+        }).create();
+        alertDialog.show();
+
     }
 
     public boolean startBond(BluetoothDevice device) {
