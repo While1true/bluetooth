@@ -142,8 +142,9 @@ public class BluetoothFragment extends Fragment {
         checkPermissions();
     }
 
-    public void startConnect(BluetoothDevice device) {
+    public BluetoothConnection startConnect(BluetoothDevice device) {
         BluetoothConnection connection = new BluetoothConnection(device);
+        return  connection;
     }
 
     public void stopDiscovery() {

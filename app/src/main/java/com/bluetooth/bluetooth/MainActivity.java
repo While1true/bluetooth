@@ -40,7 +40,12 @@ public class MainActivity extends AppCompatActivity implements BluetoothListener
                     @Override
                     public void onClick(View v) {
                         if(bluetoothFragment.startBond(item)){
-                            bluetoothFragment.startConnect(item);
+                            BluetoothConnection connection= bluetoothFragment.startConnect(item);
+                            try {
+                                connection.getOutputStream().write("hello".getBytes());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 });
@@ -64,12 +69,4 @@ public class MainActivity extends AppCompatActivity implements BluetoothListener
         }
     }
 
-    @Override
-    public void onConnectSuccess(BluetoothConnection connection) {
-        try {
-            connection.getOutputStream().write("nihao".getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }
