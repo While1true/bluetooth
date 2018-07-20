@@ -7,6 +7,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.bluetooth.bluetoothlib.BluetoothConnection;
 import com.bluetooth.bluetoothlib.BluetoothFragment;
@@ -64,7 +65,12 @@ public class MainActivity extends AppCompatActivity implements BluetoothListener
 
     @Override
     public void onConnectSuccess(BluetoothConnection connection) {
-
+        try {
+            Toast.makeText(this,"连接成功",Toast.LENGTH_LONG).show();
+            connection.getOutputStream().write("xxxxxxxxxxxxxxxxxxx".getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

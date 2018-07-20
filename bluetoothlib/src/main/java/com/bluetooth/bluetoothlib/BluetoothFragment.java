@@ -5,20 +5,15 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
-import android.widget.EditText;
 import android.widget.Toast;
 
 public class BluetoothFragment extends Fragment {
@@ -28,10 +23,23 @@ public class BluetoothFragment extends Fragment {
     private BluetoothDiscoverier bluetoothDiscoverier;
     private BluetoothConnection connection;
 
+    private boolean autoDiscovery=false;
+    private boolean autoPair=true;
+
+    private String PIN="0000";
+
     public void setBluetoothListener(BluetoothListener bluetoothListener) {
         this.bluetoothListener = bluetoothListener;
     }
 
+    public void setAutoPair(boolean autoPair,String PIN) {
+        this.autoPair = autoPair;
+        this.PIN=PIN;
+    }
+
+    public void setAutoDiscovery(boolean autoDiscovery) {
+        this.autoDiscovery = autoDiscovery;
+    }
 
     private void checkPermissions() {
         requestPermissions(new String[]{Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_CODE);
@@ -40,7 +48,9 @@ public class BluetoothFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        startDiscovery();
+        if(autoDiscovery) {
+            startDiscovery();
+        }
     }
 
     @Override
@@ -91,8 +101,8 @@ public class BluetoothFragment extends Fragment {
                             bluetoothListener.onError("pair cancel");
                     }
                 } else if (action.equals(BluetoothDevice.ACTION_PAIRING_REQUEST)) {
-                    abortBroadcast();
-                    pairDevice(device);
+                        abortBroadcast();
+                        pairDevice(device,PIN);
                 }
             }
         };
@@ -100,14 +110,16 @@ public class BluetoothFragment extends Fragment {
         foundFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         foundFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         foundFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        foundFilter.addAction(BluetoothDevice.ACTION_PAIRING_REQUEST);
+        if(autoPair) {
+            foundFilter.addAction(BluetoothDevice.ACTION_PAIRING_REQUEST);
+        }
         getActivity().registerReceiver(broadcastReceiver, foundFilter);
         bluetoothDiscoverier = new BluetoothDiscoverier(bluetoothListener);
         bluetoothDiscoverier.startDiscovery();
     }
 
-    private void pairDevice(final BluetoothDevice device) {
-        if (BondUtils.pairDevice(device, "123456")) {
+    private void pairDevice(final BluetoothDevice device,String PIN) {
+        if (BondUtils.pairDevice(device, PIN)) {
             startConnect(device);
         }
     }
