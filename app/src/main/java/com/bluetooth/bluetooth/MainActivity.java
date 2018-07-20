@@ -39,16 +39,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothListener
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if(bluetoothFragment.startBond(item)){
-                            BluetoothConnection connection= bluetoothFragment.startConnect(item);
-                            try {
-                                connection.getOutputStream().write("hello".getBytes());
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }else {
-                            //wait
-                        }
+                            bluetoothFragment.startConnect(item);
                     }
                 });
             }
@@ -69,6 +60,11 @@ public class MainActivity extends AppCompatActivity implements BluetoothListener
             devices.add(device);
             sAdapter.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    public void onConnectSuccess(BluetoothConnection connection) {
+
     }
 
 }

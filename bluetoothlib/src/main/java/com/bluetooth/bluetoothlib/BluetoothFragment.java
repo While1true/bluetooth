@@ -112,7 +112,7 @@ public class BluetoothFragment extends Fragment {
         }
     }
 
-    public boolean startBond(BluetoothDevice device) {
+    private boolean startBond(BluetoothDevice device) {
         return BondUtils.startBond(device);
     }
 
@@ -132,12 +132,20 @@ public class BluetoothFragment extends Fragment {
         checkPermissions();
     }
 
-    public BluetoothConnection startConnect(BluetoothDevice device) {
+    public void startConnect(BluetoothDevice device) {
+        if(startBond(device)){
+            startConnectInteral(device);
+        }
+    }
+    private void startConnectInteral(BluetoothDevice device) {
         if (connection == null || !connection.isConnected())
             connection = new BluetoothConnection(device);
-        return connection;
+        if(connection.isConnected()){
+            bluetoothListener.onConnectSuccess(connection);
+        }else{
+            bluetoothListener.onError("connect failed");
+        }
     }
-
     public void stopDiscovery() {
         bluetoothDiscoverier.stopDiscovery();
     }
